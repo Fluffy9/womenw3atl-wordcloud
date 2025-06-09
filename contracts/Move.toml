@@ -1,0 +1,9 @@
+[package]
+name = "womenw3atl-wordcloud"
+version = "0.0.1"
+edition = "2024"
+
+[addresses]
+wordcloud = "0x0"
+sui = "0x2"
+std = "0x1"
