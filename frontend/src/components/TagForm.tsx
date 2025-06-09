@@ -1,41 +1,20 @@
 import { useState, useEffect } from 'react';
-import { useCurrentWallet, useDisconnectWallet } from '@mysten/dapp-kit';
+import { useCurrentWallet } from '@mysten/dapp-kit';
+import { useWordContext } from '../contexts/WordContext';
 import { PlusIcon, XMarkIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
 import { createAvatar } from '@dicebear/core';
 import { identicon } from '@dicebear/collection';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AdminPanel } from './AdminPanel';
-import { useWordContext } from '../contexts/WordContext';
-
-const MAX_WORDS = 10;
-const MAX_WORD_LENGTH = 20;
-
-// Test data to demonstrate functionality
-const TEST_WORDS = [
-    'community',
-    'learning',
-    'networking',
-    'opportunities'
-];
-
-function truncateAddress(address: string | undefined): string {
-    if (!address) return '';
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
-}
-
-function getWalletInitial(address: string | undefined): string {
-    if (!address) return '?';
-    return address.slice(0, 1).toUpperCase();
-}
 
 export function TagForm() {
     const { currentWallet } = useCurrentWallet();
-    const { mutate: disconnect } = useDisconnectWallet();
-    const { words, addWord, removeWord, error: wordError, maxWords, maxWordLength, fetchMembers, isAdmin, fetchWordsFromChain } = useWordContext();
+    const { addWord, isAdmin, words, removeWord, error: wordError, maxWords, maxWordLength, fetchMembers, fetchWordsFromChain } = useWordContext();
     const [currentInput, setCurrentInput] = useState('');
     const [avatarUrl, setAvatarUrl] = useState<string>('');
     const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
     const [isMember, setIsMember] = useState<boolean | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const walletAddress = currentWallet?.accounts[0]?.address;
 
@@ -129,15 +108,6 @@ export function TagForm() {
                                 <span className="text-sm text-purple-700 font-medium">
                                     {truncateAddress(walletAddress)}
                                 </span>
-                                <motion.button
-                                    onClick={() => disconnect()}
-                                    className="px-2 py-0.5 text-xs font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-100 rounded-full transition-colors"
-                                    title="Disconnect wallet"
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                >
-                                    Disconnect
-                                </motion.button>
                             </div>
                         </motion.div>
                     )}
@@ -209,18 +179,18 @@ export function TagForm() {
                                         initial={{ opacity: 0, scale: 0.8 }}
                                         animate={{ opacity: 1, scale: 1 }}
                                         exit={{ opacity: 0, scale: 0.8 }}
-                                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                        transition={{ duration: 0.2 }}
                                         layout
                                     >
                                         {word.text}
                                         <motion.button
                                             type="button"
-                                            onClick={() => removeWord(index)}
+                                            onClick={() => removeWord(word.text)}
                                             className="text-purple-500 hover:text-purple-700"
-                                            whileHover={{ scale: 1.2 }}
-                                            whileTap={{ scale: 0.8 }}
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.9 }}
                                         >
-                                            <XMarkIcon className="h-4 w-4" />
+                                            <XMarkIcon className="w-4 h-4" />
                                         </motion.button>
                                     </motion.span>
                                 ))}
@@ -240,21 +210,19 @@ export function TagForm() {
                 )}
             </motion.div>
 
-            <AnimatePresence>
-                {walletAddress && isAdmin && (
-                    <motion.button
-                        onClick={() => setIsAdminPanelOpen(true)}
-                        className="fixed bottom-6 right-6 p-3 bg-white shadow-lg rounded-full text-gray-400 hover:text-gray-600 z-10"
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                        whileHover={{ scale: 1.1, rotate: 15 }}
-                        whileTap={{ scale: 0.9 }}
-                    >
-                        <Cog6ToothIcon className="h-6 w-6" />
-                    </motion.button>
-                )}
-            </AnimatePresence>
+            {walletAddress && isAdmin && (
+                <motion.button
+                    onClick={() => setIsAdminPanelOpen(true)}
+                    className="fixed bottom-6 right-6 p-3 bg-white shadow-lg rounded-full text-gray-400 hover:text-gray-600 z-10"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    whileHover={{ scale: 1.1, rotate: 15 }}
+                    whileTap={{ scale: 0.9 }}
+                >
+                    <Cog6ToothIcon className="h-6 w-6" />
+                </motion.button>
+            )}
 
             {isAdmin && (
                 <AdminPanel

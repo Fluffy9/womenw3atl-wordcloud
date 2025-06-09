@@ -1,6 +1,5 @@
 import { ConnectButton } from './ConnectButton';
 import { TagForm } from './TagForm';
-import { Cog6ToothIcon } from '@heroicons/react/24/outline';
 import { useCurrentWallet } from '@mysten/dapp-kit';
 
 export function WelcomeCard() {
