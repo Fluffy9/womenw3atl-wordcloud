@@ -53,7 +53,7 @@ The RPC is the connection between the website and the smart contract. It allows 
 | Store each word + user ID                 | –                                                      | Store words and associate with wallet address |
 | Count word frequency                      | –                                                      | Maintain word frequency                       |
 | Track who submitted which words           | –                                                      | Map words to contributor                      |
-| Allow edits by original contributor       | UI for editing user’s own words                        | Permissioned editing by original submitter    |
+| Allow edits by original contributor       | UI for editing user's own words                        | Permissioned editing by original submitter    |
 | Add new members to contribute             | –                                                      | Admin-only function to add members            |
 | Admin invites new women                   | Admin UI for invitations                               | Admin-only invitation control                 |
 | Ban/remove inappropriate words            | Admin interface to manage/delete words                 | Admin-only word removal                       |
@@ -91,8 +91,28 @@ Always go with the typescript one if available. It's a much better choice when v
 
 I ended up choosing Sui Kit with typescript and Vite
 
-
-
 ### Constants file and context
 
-Let's get the hard stuff out of the way first. We will 
+
+## Deployment
+
+The application is automatically deployed to GitHub Pages when changes are pushed to the main branch. The deployment process:
+
+1. Builds the frontend application
+2. Deploys to GitHub Pages
+3. Available at: https://womenw3atl.github.io/womenw3atl-wordcloud
+
+### Building for Production
+
+```bash
+cd frontend
+pnpm build
+```
+
+### Smart Contract Deployment
+
+```bash
+cd contracts
+sui move build
+sui client publish --gas-budget 100000000
+``` 

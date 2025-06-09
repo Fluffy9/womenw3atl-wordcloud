@@ -1,12 +1,13 @@
 {
-  "name": "frontend",
+  "name": "womenw3atl-wordcloud",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "homepage": "https://womenw3atl.github.io/womenw3atl-wordcloud",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
   "dependencies": {
