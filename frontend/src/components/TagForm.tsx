@@ -19,7 +19,6 @@ export function TagForm() {
     const [avatarUrl, setAvatarUrl] = useState<string>('');
     const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
     const [isMember, setIsMember] = useState<boolean | null>(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const walletAddress = currentWallet?.accounts[0]?.address;
 
@@ -190,7 +189,7 @@ export function TagForm() {
                                         {word.text}
                                         <motion.button
                                             type="button"
-                                            onClick={() => removeWord(word.text)}
+                                            onClick={() => removeWord(index)}
                                             className="text-purple-500 hover:text-purple-700"
                                             whileHover={{ scale: 1.1 }}
                                             whileTap={{ scale: 0.9 }}
