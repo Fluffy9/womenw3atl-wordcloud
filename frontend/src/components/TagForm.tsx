@@ -7,6 +7,11 @@ import { identicon } from '@dicebear/collection';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AdminPanel } from './AdminPanel';
 
+function truncateAddress(address: string | undefined): string {
+    if (!address) return '';
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
+
 export function TagForm() {
     const { currentWallet } = useCurrentWallet();
     const { addWord, isAdmin, words, removeWord, error: wordError, maxWords, maxWordLength, fetchMembers, fetchWordsFromChain } = useWordContext();

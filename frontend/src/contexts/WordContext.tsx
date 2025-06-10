@@ -1,9 +1,9 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { useCurrentWallet, useSignAndExecuteTransaction } from '@mysten/dapp-kit';
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
-import { bcs } from '@mysten/sui.js/bcs';
+import { SuiClient, getFullnodeUrl } from '@mysten/sui/client';
+import { Transaction } from '@mysten/sui/transactions';
+import { bcs } from '@mysten/sui/bcs';
 
 interface WordData {
     text: string;
@@ -118,7 +118,7 @@ export const WordProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setError(null);
 
         try {
-            const tx = new TransactionBlock();
+            const tx = new Transaction();
             // Convert to lowercase before sending to contract
             const lowerWord = trimmedWord.toLowerCase();
             const wordBytes = new Uint8Array(new TextEncoder().encode(lowerWord));
@@ -157,7 +157,7 @@ export const WordProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setError(null);
 
         try {
-            const tx = new TransactionBlock();
+            const tx = new Transaction();
             const indexBytes = new Uint8Array(new BigUint64Array([BigInt(index)]).buffer);
 
             tx.moveCall({
@@ -199,7 +199,7 @@ export const WordProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             console.log('Admin Config ID:', ADMIN_CONFIG_ID);
             console.log('Admin Cap ID:', ADMIN_CAP_ID);
 
-            const tx = new TransactionBlock();
+            const tx = new Transaction();
             const serializedAddress = bcs.Address.serialize(newMemberAddress);
             console.log('Serialized address bytes:', serializedAddress.toBytes());
 
