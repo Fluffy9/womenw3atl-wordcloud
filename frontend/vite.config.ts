@@ -14,5 +14,5 @@ export default defineConfig({
       },
     },
   },
-  base: '/womenw3atl-wordcloud/',
+  base: '/',
 })
