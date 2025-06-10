@@ -14,7 +14,7 @@ function truncateAddress(address: string | undefined): string {
 
 export function TagForm() {
     const { currentWallet } = useCurrentWallet();
-    const { addWord, isAdmin, words, removeWord, error: wordError, maxWords, maxWordLength, fetchMembers, fetchWordsFromChain } = useWordContext();
+    const { addWord, isAdmin, words, removeWord, error: wordError, maxWordLength, fetchMembers, fetchWordsFromChain } = useWordContext();
     const [currentInput, setCurrentInput] = useState('');
     const [avatarUrl, setAvatarUrl] = useState<string>('');
     const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
@@ -73,7 +73,7 @@ export function TagForm() {
             >
                 <div className="text-center">
                     <h2 className="text-2xl font-bold text-purple-600">What Do You Hope to Gain?</h2>
-                    <p className="text-gray-600 mt-2">Add up to {maxWords} words (max {maxWordLength} characters each)</p>
+                    <p className="text-gray-600 mt-2">Add your words to the cloud (max {maxWordLength} characters each)</p>
                 </div>
 
                 <AnimatePresence>
@@ -143,7 +143,6 @@ export function TagForm() {
                                 maxLength={maxWordLength}
                             />
                             <div className="flex items-center gap-2">
-                                <span className="text-sm text-gray-500">{words.length}/{maxWords}</span>
                                 <motion.button
                                     type="button"
                                     onClick={handleAddWord}

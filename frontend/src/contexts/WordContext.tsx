@@ -22,7 +22,6 @@ interface WordContextType {
     fetchBannedWords: () => Promise<string[]>;
     addMember: (address: string) => Promise<void>;
     isAdmin: boolean;
-    maxWords: number;
     maxWordLength: number;
 }
 
@@ -323,7 +322,6 @@ export const WordProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 fetchBannedWords,
                 addMember,
                 isAdmin,
-                maxWords: 10,
                 maxWordLength: 20,
             }}
         >
