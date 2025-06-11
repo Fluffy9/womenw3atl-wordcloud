@@ -46,7 +46,7 @@ export function TagCloud() {
     };
 
     // Function to generate a random position outside the safe zone
-    const generateRandomPosition = (index: number, totalWords: number): WordPosition => {
+    const generateRandomPosition = (index: number): WordPosition => {
         const containerWidth = window.innerWidth;
         const containerHeight = window.innerHeight;
         const padding = 50;
