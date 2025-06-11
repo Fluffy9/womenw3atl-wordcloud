@@ -46,55 +46,21 @@ export function TagCloud() {
             Math.abs(y - centerY) < safeZoneHeight / 2;
     };
 
-    // Function to generate a random position outside the safe zone
-    const generateRandomPosition = (index: number): WordPosition => {
-        const containerWidth = window.innerWidth;
-        const containerHeight = window.innerHeight;
-        const padding = 50;
-
-        // Use golden ratio for better distribution
-        const goldenRatio = 0.618033988749895;
-        const angle = index * goldenRatio * Math.PI * 2;
-        const radius = Math.min(containerWidth, containerHeight) * 0.4;
-
-        // Calculate base position using golden spiral
-        let x = window.innerWidth / 2 + Math.cos(angle) * radius;
-        let y = window.innerHeight / 2 + Math.sin(angle) * radius;
-
-        // Add some randomness to prevent perfect spiral
-        x += (Math.random() - 0.5) * radius * 0.2;
-        y += (Math.random() - 0.5) * radius * 0.2;
-
-        // Ensure position is within bounds and not in safe zone
-        x = Math.max(padding, Math.min(containerWidth - padding, x));
-        y = Math.max(padding, Math.min(containerHeight - padding, y));
-
-        // If position is in safe zone, move it outward
-        if (isInSafeZone(x, y)) {
-            const centerX = window.innerWidth / 2;
-            const centerY = window.innerHeight / 2;
-            const dx = x - centerX;
-            const dy = y - centerY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            const scale = (Math.max(200, distance) / distance);
-            x = centerX + dx * scale;
-            y = centerY + dy * scale;
-        }
-
-        return {
-            x,
-            y,
-            rotation: Math.random() * 360 - 180
-        };
-    };
-
     // Initialize positions when component mounts and window is ready
     useEffect(() => {
         let timeoutId: NodeJS.Timeout;
 
         const initializePositions = () => {
+            console.log('Initializing positions...', {
+                windowWidth: window.innerWidth,
+                windowHeight: window.innerHeight,
+                wordsCount: words.length,
+                existingPositions: positionsRef.current.length
+            });
+
             // Ensure we have valid dimensions
             if (window.innerWidth === 0 || window.innerHeight === 0) {
+                console.log('Window dimensions not ready, retrying...');
                 // If dimensions aren't ready, try again after a short delay
                 timeoutId = setTimeout(initializePositions, 100);
                 return;
@@ -102,20 +68,33 @@ export function TagCloud() {
 
             const newPositions = words.map((_, index) => {
                 if (positionsRef.current[index]) {
+                    console.log(`Reusing position for index ${index}`);
                     return positionsRef.current[index];
                 }
-                return generateRandomPosition(index);
+                const position = generateRandomPosition(index);
+                console.log(`Generated new position for index ${index}:`, position);
+                return position;
             });
 
             positionsRef.current = newPositions;
+            console.log('Positions initialized:', {
+                totalPositions: newPositions.length,
+                firstPosition: newPositions[0],
+                lastPosition: newPositions[newPositions.length - 1]
+            });
             setIsReady(true);
         };
 
         // Initial check with a small delay to ensure window is ready
+        console.log('Starting initialization with delay...');
         timeoutId = setTimeout(initializePositions, 50);
 
         // Set up resize handler
         const handleResize = () => {
+            console.log('Window resized:', {
+                width: window.innerWidth,
+                height: window.innerHeight
+            });
             setIsReady(false);
             // Debounce resize handler
             clearTimeout(timeoutId);
@@ -125,6 +104,7 @@ export function TagCloud() {
         window.addEventListener('resize', handleResize);
 
         return () => {
+            console.log('Cleaning up TagCloud component...');
             window.removeEventListener('resize', handleResize);
             clearTimeout(timeoutId);
         };
@@ -143,8 +123,69 @@ export function TagCloud() {
         setTooltip(null);
     };
 
+    // Function to generate a random position outside the safe zone
+    const generateRandomPosition = (index: number): WordPosition => {
+        const containerWidth = window.innerWidth;
+        const containerHeight = window.innerHeight;
+        const padding = 50;
+
+        console.log(`Generating position for index ${index}:`, {
+            containerWidth,
+            containerHeight,
+            padding
+        });
+
+        // Use golden ratio for better distribution
+        const goldenRatio = 0.618033988749895;
+        const angle = index * goldenRatio * Math.PI * 2;
+        const radius = Math.min(containerWidth, containerHeight) * 0.4;
+
+        // Calculate base position using golden spiral
+        let x = window.innerWidth / 2 + Math.cos(angle) * radius;
+        let y = window.innerHeight / 2 + Math.sin(angle) * radius;
+
+        console.log('Initial position calculation:', {
+            angle,
+            radius,
+            x,
+            y
+        });
+
+        // Add some randomness to prevent perfect spiral
+        x += (Math.random() - 0.5) * radius * 0.2;
+        y += (Math.random() - 0.5) * radius * 0.2;
+
+        // Ensure position is within bounds and not in safe zone
+        x = Math.max(padding, Math.min(containerWidth - padding, x));
+        y = Math.max(padding, Math.min(containerHeight - padding, y));
+
+        // If position is in safe zone, move it outward
+        if (isInSafeZone(x, y)) {
+            console.log('Position in safe zone, adjusting...');
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            const dx = x - centerX;
+            const dy = y - centerY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const scale = (Math.max(200, distance) / distance);
+            x = centerX + dx * scale;
+            y = centerY + dy * scale;
+            console.log('Adjusted position:', { x, y });
+        }
+
+        const position = {
+            x,
+            y,
+            rotation: Math.random() * 360 - 180
+        };
+
+        console.log('Final position:', position);
+        return position;
+    };
+
     if (!isReady) {
-        return null; // Don't render anything until positions are calculated
+        console.log('TagCloud not ready, waiting for initialization...');
+        return null;
     }
 
     return (
