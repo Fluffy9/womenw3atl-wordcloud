@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from 'react';
 interface WordPosition {
     x: number;
     y: number;
-    rotation: number;
 }
 
 interface TooltipState {
@@ -186,8 +185,7 @@ export function TagCloud() {
 
         const position = {
             x,
-            y,
-            rotation: Math.random() * 360 - 180
+            y
         };
 
         console.log('Final position:', position);
@@ -221,8 +219,7 @@ export function TagCloud() {
                         fontSize: `${getFontSize(word.frequency)}rem`,
                         opacity: 0.7 + (word.frequency / maxFreq) * 0.3,
                         left: `${positionsRef.current[index]?.x || 0}px`,
-                        top: `${positionsRef.current[index]?.y || 0}px`,
-                        transform: `rotate(${positionsRef.current[index]?.rotation || 0}deg)`,
+                        top: `${positionsRef.current[index]?.y || 0}px`
                     }}
                     layout
                     initial={{ opacity: 0 }}
