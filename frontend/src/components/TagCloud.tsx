@@ -20,16 +20,17 @@ export function TagCloud() {
     const positionsRef = useRef<WordPosition[]>([]);
     const containerRef = useRef<HTMLDivElement>(null);
     const [tooltip, setTooltip] = useState<TooltipState | null>(null);
+    const [isReady, setIsReady] = useState(false);
 
     // Calculate min and max frequencies for scaling
     const frequencies = words.map(word => word.frequency);
-    const minFreq = Math.min(...frequencies, 1); // Use 1 as minimum to avoid division by zero
+    const minFreq = Math.min(...frequencies, 1);
     const maxFreq = Math.max(...frequencies, 1);
 
     // Function to calculate font size based on frequency
     const getFontSize = (frequency: number) => {
-        const minSize = 1; // rem
-        const maxSize = 3; // rem
+        const minSize = 1;
+        const maxSize = 3;
         const scale = (frequency - minFreq) / (maxFreq - minFreq);
         return minSize + (scale * (maxSize - minSize));
     };
@@ -38,8 +39,8 @@ export function TagCloud() {
     const isInSafeZone = (x: number, y: number): boolean => {
         const centerX = window.innerWidth / 2;
         const centerY = window.innerHeight / 2;
-        const safeZoneWidth = 200; // Reduced from 400
-        const safeZoneHeight = 300; // Reduced from 600
+        const safeZoneWidth = 200;
+        const safeZoneHeight = 300;
 
         return Math.abs(x - centerX) < safeZoneWidth / 2 &&
             Math.abs(y - centerY) < safeZoneHeight / 2;
@@ -87,20 +88,35 @@ export function TagCloud() {
         };
     };
 
-    // Generate random positions for words only when words array changes
+    // Initialize positions when component mounts and window is ready
     useEffect(() => {
-        if (words.length === positionsRef.current.length) return;
-
-        const newPositions = words.map((_, index) => {
-            // If we already have a position for this index, keep it
-            if (positionsRef.current[index]) {
-                return positionsRef.current[index];
+        const initializePositions = () => {
+            if (window.innerWidth === 0 || window.innerHeight === 0) {
+                return;
             }
-            // Otherwise generate a new position
-            return generateRandomPosition(index);
-        });
 
-        positionsRef.current = newPositions;
+            const newPositions = words.map((_, index) => {
+                if (positionsRef.current[index]) {
+                    return positionsRef.current[index];
+                }
+                return generateRandomPosition(index);
+            });
+
+            positionsRef.current = newPositions;
+            setIsReady(true);
+        };
+
+        // Initial check
+        initializePositions();
+
+        // Set up resize handler
+        const handleResize = () => {
+            setIsReady(false);
+            initializePositions();
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, [words]);
 
     const handleWordHover = (word: { text: string; frequency: number }, x: number, y: number) => {
@@ -115,6 +131,10 @@ export function TagCloud() {
     const handleWordLeave = () => {
         setTooltip(null);
     };
+
+    if (!isReady) {
+        return null; // Don't render anything until positions are calculated
+    }
 
     return (
         <motion.div
