@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { useCurrentWallet, useSignAndExecuteTransaction } from '@mysten/dapp-kit';
 import { SuiClient, getFullnodeUrl } from '@mysten/sui/client';
@@ -22,6 +22,7 @@ interface WordContextType {
     fetchBannedWords: () => Promise<string[]>;
     addMember: (address: string) => Promise<void>;
     isAdmin: boolean;
+    maxWords: number;
     maxWordLength: number;
 }
 
@@ -73,7 +74,39 @@ export const WordProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isAdmin, setIsAdmin] = useState(false);
+    const lastFetchTimeRef = useRef<number>(0);
+    const fetchIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+    // Initial fetch and periodic fetch of words
+    useEffect(() => {
+        const fetchData = async () => {
+            // Skip if we've fetched recently (within 10 seconds)
+            if (Date.now() - lastFetchTimeRef.current < 10000) {
+                return;
+            }
+
+            try {
+                await fetchWordsFromChain();
+                lastFetchTimeRef.current = Date.now();
+            } catch (err) {
+                console.error('Error fetching words:', err);
+            }
+        };
+
+        // Initial fetch
+        fetchData();
+
+        // Set up periodic fetch every 30 seconds
+        fetchIntervalRef.current = setInterval(fetchData, 30000);
+
+        return () => {
+            if (fetchIntervalRef.current) {
+                clearInterval(fetchIntervalRef.current);
+            }
+        };
+    }, []); // Empty dependency array since this should run once on mount
+
+    // Admin status check effect
     useEffect(() => {
         const checkAdminStatus = async () => {
             if (!currentWallet?.accounts[0]?.address) {
@@ -137,8 +170,18 @@ export const WordProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 chain: 'sui:testnet',
             });
 
-            // Fetch the updated word list after adding the word
-            await fetchWordsFromChain();
+            // Update local state directly instead of fetching from chain
+            setWords(prevWords => {
+                const existingWord = prevWords.find(w => w.text.toLowerCase() === lowerWord);
+                if (existingWord) {
+                    return prevWords.map(w =>
+                        w.text.toLowerCase() === lowerWord
+                            ? { ...w, frequency: w.frequency + 1 }
+                            : w
+                    );
+                }
+                return [...prevWords, { text: toCamelCase(trimmedWord), frequency: 1 }];
+            });
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to add word');
         } finally {
@@ -173,7 +216,8 @@ export const WordProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 chain: 'sui:testnet',
             });
 
-            setWords(words.filter((_, i) => i !== index));
+            // Update local state directly
+            setWords(prevWords => prevWords.filter((_, i) => i !== index));
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to remove word');
         } finally {
@@ -254,8 +298,16 @@ export const WordProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 }));
 
                 // Merge case-insensitive duplicates and convert to camel case
+
                 const mergedWords = mergeCaseInsensitiveWords(decodedWords);
-                setWords(mergedWords);
+                let deduplicatedWords: WordData[] = [];
+                for (const word of mergedWords) {
+                    if (deduplicatedWords.map(item => item.text).includes(word.text)) {
+                        continue;
+                    }
+                    deduplicatedWords.push(word);
+                }
+                setWords(deduplicatedWords);
             } else {
                 console.log('No words found in the contract');
                 setWords([]);
@@ -322,6 +374,7 @@ export const WordProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 fetchBannedWords,
                 addMember,
                 isAdmin,
+                maxWords: 10,
                 maxWordLength: 20,
             }}
         >

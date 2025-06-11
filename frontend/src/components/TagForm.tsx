@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { useCurrentWallet } from '@mysten/dapp-kit';
+import { useState, useEffect, useRef } from 'react';
+import { useCurrentWallet, useDisconnectWallet } from '@mysten/dapp-kit';
 import { useWordContext } from '../contexts/WordContext';
-import { PlusIcon, XMarkIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, XMarkIcon, Cog6ToothIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
 import { createAvatar } from '@dicebear/core';
 import { identicon } from '@dicebear/collection';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,16 +14,18 @@ function truncateAddress(address: string | undefined): string {
 
 export function TagForm() {
     const { currentWallet } = useCurrentWallet();
+    const { mutate: disconnect } = useDisconnectWallet();
     const { addWord, isAdmin, words, removeWord, error: wordError, maxWordLength, fetchMembers, fetchWordsFromChain } = useWordContext();
     const [currentInput, setCurrentInput] = useState('');
     const [avatarUrl, setAvatarUrl] = useState<string>('');
     const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
     const [isMember, setIsMember] = useState<boolean | null>(null);
+    const hasCheckedMembership = useRef(false);
 
     const walletAddress = currentWallet?.accounts[0]?.address;
 
     useEffect(() => {
-        if (walletAddress) {
+        if (walletAddress && !hasCheckedMembership.current) {
             const generateAvatar = async () => {
                 const avatar = await createAvatar(identicon, {
                     seed: walletAddress,
@@ -37,14 +39,25 @@ export function TagForm() {
 
             // Check if user is a member and fetch words
             const checkMembership = async () => {
-                const members = await fetchMembers();
-                setIsMember(members.includes(walletAddress));
-                // Fetch words after checking membership
-                await fetchWordsFromChain();
+                try {
+                    const members = await fetchMembers();
+                    setIsMember(members.includes(walletAddress));
+                    // Fetch words after checking membership
+                    await fetchWordsFromChain();
+                    hasCheckedMembership.current = true;
+                } catch (error) {
+                    console.error('Error checking membership:', error);
+                }
             };
             checkMembership();
         }
-    }, [walletAddress, fetchMembers]);
+    }, [walletAddress]);
+
+    // Reset membership check when wallet changes
+    useEffect(() => {
+        hasCheckedMembership.current = false;
+        setIsMember(null);
+    }, [walletAddress]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -71,7 +84,7 @@ export function TagForm() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
             >
-                <div className="text-center">
+                <div className="text-center relative">
                     <h2 className="text-2xl font-bold text-purple-600">What Do You Hope to Gain?</h2>
                     <p className="text-gray-600 mt-2">Add your words to the cloud (max {maxWordLength} characters each)</p>
                 </div>
@@ -112,6 +125,15 @@ export function TagForm() {
                                 <span className="text-sm text-purple-700 font-medium">
                                     {truncateAddress(walletAddress)}
                                 </span>
+                                <motion.button
+                                    onClick={() => disconnect()}
+                                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                                    title="Disconnect wallet"
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                >
+                                    <ArrowRightOnRectangleIcon className="w-4 h-4" />
+                                </motion.button>
                             </div>
                         </motion.div>
                     )}
