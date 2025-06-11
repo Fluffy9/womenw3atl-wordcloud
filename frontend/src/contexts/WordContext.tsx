@@ -166,7 +166,7 @@ export const WordProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             });
 
             await signAndExecute({
-                transaction: tx,
+                transaction: tx as any,
                 chain: 'sui:testnet',
             });
 
@@ -212,7 +212,7 @@ export const WordProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             });
 
             await signAndExecute({
-                transaction: tx,
+                transaction: tx as any,
                 chain: 'sui:testnet',
             });
 
@@ -258,7 +258,7 @@ export const WordProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             console.log('Transaction built:', tx.serialize());
 
             const result = await signAndExecute({
-                transaction: tx,
+                transaction: tx as any,
                 chain: 'sui:testnet',
             });
 
@@ -301,7 +301,7 @@ export const WordProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
                 const mergedWords = mergeCaseInsensitiveWords(decodedWords);
                 let deduplicatedWords: WordData[] = [];
-                for (const word of decodedWords) {
+                for (const word of mergedWords) {
                     if (deduplicatedWords.map(item => item.text).includes(word.text)) {
                         continue;
                     }
