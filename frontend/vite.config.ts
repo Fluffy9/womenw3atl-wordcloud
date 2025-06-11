@@ -11,6 +11,24 @@ export default defineConfig({
         target: 'https://fullnode.testnet.sui.io',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/sui/, ''),
+        secure: false,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+        },
+      },
+    },
+  },
+  preview: {
+    port: 3000,
+    proxy: {
+      '/sui': {
+        target: 'https://fullnode.testnet.sui.io',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/sui/, ''),
+        secure: false,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+        },
       },
     },
   },

@@ -38,8 +38,8 @@ export function TagCloud() {
     const isInSafeZone = (x: number, y: number): boolean => {
         const centerX = window.innerWidth / 2;
         const centerY = window.innerHeight / 2;
-        const safeZoneWidth = 400; // Width of the safe zone
-        const safeZoneHeight = 600; // Height of the safe zone
+        const safeZoneWidth = 200; // Reduced from 400
+        const safeZoneHeight = 300; // Reduced from 600
 
         return Math.abs(x - centerX) < safeZoneWidth / 2 &&
             Math.abs(y - centerY) < safeZoneHeight / 2;
@@ -49,10 +49,11 @@ export function TagCloud() {
     const generateRandomPosition = (): WordPosition => {
         const containerWidth = window.innerWidth;
         const containerHeight = window.innerHeight;
-        const padding = 100; // Padding from edges
-        const maxAttempts = 10; // Maximum attempts to find a valid position
+        const padding = 50; // Reduced padding
+        const maxAttempts = 20; // Increased attempts
 
         for (let i = 0; i < maxAttempts; i++) {
+            // Use a more even distribution
             const x = Math.random() * (containerWidth - 2 * padding) + padding;
             const y = Math.random() * (containerHeight - 2 * padding) + padding;
 
@@ -65,13 +66,15 @@ export function TagCloud() {
             }
         }
 
-        // If we couldn't find a position outside the safe zone, use the edges
-        const isLeft = Math.random() > 0.5;
-        const isTop = Math.random() > 0.5;
+        // If we couldn't find a position outside the safe zone, use a more distributed approach
+        const angle = Math.random() * Math.PI * 2;
+        const distance = Math.random() * Math.min(containerWidth, containerHeight) * 0.4 + Math.min(containerWidth, containerHeight) * 0.1;
+        const x = window.innerWidth / 2 + Math.cos(angle) * distance;
+        const y = window.innerHeight / 2 + Math.sin(angle) * distance;
 
         return {
-            x: isLeft ? padding : containerWidth - padding,
-            y: isTop ? padding : containerHeight - padding,
+            x: Math.max(padding, Math.min(containerWidth - padding, x)),
+            y: Math.max(padding, Math.min(containerHeight - padding, y)),
             rotation: Math.random() * 360 - 180
         };
     };

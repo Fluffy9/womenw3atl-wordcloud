@@ -297,11 +297,8 @@ export const WordProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     frequency: Number(word.fields.frequency)
                 }));
 
-                // Merge case-insensitive duplicates and convert to camel case
-
-                const mergedWords = mergeCaseInsensitiveWords(decodedWords);
                 let deduplicatedWords: WordData[] = [];
-                for (const word of mergedWords) {
+                for (const word of decodedWords) {
                     if (deduplicatedWords.map(item => item.text).includes(word.text)) {
                         continue;
                     }
@@ -314,7 +311,10 @@ export const WordProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             }
         } catch (error) {
             console.error('Error fetching words:', error);
-            setWords([]);
+            // Only show error if wallet is connected
+            if (currentWallet?.accounts[0]?.address) {
+                setError('Unable to fetch words. Please try again later.');
+            }
         }
     };
 
@@ -353,9 +353,9 @@ export const WordProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const fetchBannedWords = async (): Promise<string[]> => {
         try {
             const result = await publicSuiClient.call(`${PACKAGE_ID}::cloud::get_banned_words`, [ADMIN_CONFIG_ID]);
-
             return (result as any[]).map((b) => Buffer.from(b).toString());
-        } catch {
+        } catch (error) {
+            console.error('Error fetching banned words:', error);
             return [];
         }
     };

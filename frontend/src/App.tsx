@@ -2,9 +2,10 @@ import '@mysten/dapp-kit/dist/index.css'; // ✅ Required for ConnectButton and 
 import { SuiClientProvider, WalletProvider } from '@mysten/dapp-kit';
 import { getFullnodeUrl } from '@mysten/sui/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { WelcomeCard } from './components/WelcomeCard';
-import { TagCloud } from './components/TagCloud';
 import { WordProvider } from './contexts/WordContext';
+import { TagForm } from './components/TagForm';
+import { TagCloud } from './components/TagCloud';
+import { WelcomeCard } from './components/WelcomeCard';
 
 const queryClient = new QueryClient();
 
@@ -14,9 +15,9 @@ function App() {
       <SuiClientProvider networks={{ testnet: { url: getFullnodeUrl('testnet') } }} defaultNetwork="testnet">
         <WalletProvider autoConnect>
           <WordProvider>
-            <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white relative">
+            <div className="min-h-screen bg-gradient-to-br from-purple-50 to-purple-100">
               <TagCloud />
-              <div className="container mx-auto px-4 py-8 relative z-10">
+              <div className="relative z-10">
                 <WelcomeCard />
               </div>
             </div>
