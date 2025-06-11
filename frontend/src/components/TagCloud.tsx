@@ -90,8 +90,13 @@ export function TagCloud() {
 
     // Initialize positions when component mounts and window is ready
     useEffect(() => {
+        let timeoutId: NodeJS.Timeout;
+
         const initializePositions = () => {
+            // Ensure we have valid dimensions
             if (window.innerWidth === 0 || window.innerHeight === 0) {
+                // If dimensions aren't ready, try again after a short delay
+                timeoutId = setTimeout(initializePositions, 100);
                 return;
             }
 
@@ -106,17 +111,23 @@ export function TagCloud() {
             setIsReady(true);
         };
 
-        // Initial check
-        initializePositions();
+        // Initial check with a small delay to ensure window is ready
+        timeoutId = setTimeout(initializePositions, 50);
 
         // Set up resize handler
         const handleResize = () => {
             setIsReady(false);
-            initializePositions();
+            // Debounce resize handler
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(initializePositions, 100);
         };
 
         window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            clearTimeout(timeoutId);
+        };
     }, [words]);
 
     const handleWordHover = (word: { text: string; frequency: number }, x: number, y: number) => {
