@@ -46,35 +46,43 @@ export function TagCloud() {
     };
 
     // Function to generate a random position outside the safe zone
-    const generateRandomPosition = (): WordPosition => {
+    const generateRandomPosition = (index: number, totalWords: number): WordPosition => {
         const containerWidth = window.innerWidth;
         const containerHeight = window.innerHeight;
-        const padding = 50; // Reduced padding
-        const maxAttempts = 20; // Increased attempts
+        const padding = 50;
 
-        for (let i = 0; i < maxAttempts; i++) {
-            // Use a more even distribution
-            const x = Math.random() * (containerWidth - 2 * padding) + padding;
-            const y = Math.random() * (containerHeight - 2 * padding) + padding;
+        // Use golden ratio for better distribution
+        const goldenRatio = 0.618033988749895;
+        const angle = index * goldenRatio * Math.PI * 2;
+        const radius = Math.min(containerWidth, containerHeight) * 0.4;
 
-            if (!isInSafeZone(x, y)) {
-                return {
-                    x,
-                    y,
-                    rotation: Math.random() * 360 - 180 // Random rotation between -180 and 180 degrees
-                };
-            }
+        // Calculate base position using golden spiral
+        let x = window.innerWidth / 2 + Math.cos(angle) * radius;
+        let y = window.innerHeight / 2 + Math.sin(angle) * radius;
+
+        // Add some randomness to prevent perfect spiral
+        x += (Math.random() - 0.5) * radius * 0.2;
+        y += (Math.random() - 0.5) * radius * 0.2;
+
+        // Ensure position is within bounds and not in safe zone
+        x = Math.max(padding, Math.min(containerWidth - padding, x));
+        y = Math.max(padding, Math.min(containerHeight - padding, y));
+
+        // If position is in safe zone, move it outward
+        if (isInSafeZone(x, y)) {
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            const dx = x - centerX;
+            const dy = y - centerY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const scale = (Math.max(200, distance) / distance);
+            x = centerX + dx * scale;
+            y = centerY + dy * scale;
         }
 
-        // If we couldn't find a position outside the safe zone, use a more distributed approach
-        const angle = Math.random() * Math.PI * 2;
-        const distance = Math.random() * Math.min(containerWidth, containerHeight) * 0.4 + Math.min(containerWidth, containerHeight) * 0.1;
-        const x = window.innerWidth / 2 + Math.cos(angle) * distance;
-        const y = window.innerHeight / 2 + Math.sin(angle) * distance;
-
         return {
-            x: Math.max(padding, Math.min(containerWidth - padding, x)),
-            y: Math.max(padding, Math.min(containerHeight - padding, y)),
+            x,
+            y,
             rotation: Math.random() * 360 - 180
         };
     };
@@ -89,7 +97,7 @@ export function TagCloud() {
                 return positionsRef.current[index];
             }
             // Otherwise generate a new position
-            return generateRandomPosition();
+            return generateRandomPosition(index, words.length);
         });
 
         positionsRef.current = newPositions;
@@ -114,7 +122,7 @@ export function TagCloud() {
             className="fixed inset-0 pointer-events-none"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.3 }}
         >
             {words.map((word, index) => (
                 <motion.span
@@ -122,18 +130,17 @@ export function TagCloud() {
                     className="absolute text-purple-600 hover:text-purple-700 transition-colors cursor-pointer"
                     style={{
                         fontSize: `${getFontSize(word.frequency)}rem`,
-                        opacity: 0.7 + (word.frequency / maxFreq) * 0.3, // Scale opacity with frequency
+                        opacity: 0.7 + (word.frequency / maxFreq) * 0.3,
                         left: `${positionsRef.current[index]?.x || 0}px`,
                         top: `${positionsRef.current[index]?.y || 0}px`,
                         transform: `rotate(${positionsRef.current[index]?.rotation || 0}deg)`,
                     }}
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
+                    layout
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
                     transition={{
-                        type: "spring",
-                        stiffness: 260,
-                        damping: 20,
-                        delay: index * 0.05
+                        layout: { duration: 0.3 },
+                        opacity: { duration: 0.2 }
                     }}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
