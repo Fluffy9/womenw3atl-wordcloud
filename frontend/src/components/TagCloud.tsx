@@ -97,7 +97,7 @@ export function TagCloud() {
                 return positionsRef.current[index];
             }
             // Otherwise generate a new position
-            return generateRandomPosition(index, words.length);
+            return generateRandomPosition(index);
         });
 
         positionsRef.current = newPositions;
