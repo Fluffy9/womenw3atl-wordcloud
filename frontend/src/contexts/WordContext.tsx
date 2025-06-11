@@ -297,6 +297,9 @@ export const WordProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     frequency: Number(word.fields.frequency)
                 }));
 
+                // Merge case-insensitive duplicates and convert to camel case
+
+                const mergedWords = mergeCaseInsensitiveWords(decodedWords);
                 let deduplicatedWords: WordData[] = [];
                 for (const word of decodedWords) {
                     if (deduplicatedWords.map(item => item.text).includes(word.text)) {

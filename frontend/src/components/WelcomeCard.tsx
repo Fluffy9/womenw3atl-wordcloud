@@ -1,7 +1,6 @@
 import { ConnectButton } from './ConnectButton';
 import { TagForm } from './TagForm';
 import { useCurrentWallet } from '@mysten/dapp-kit';
-import { TagCloud } from './TagCloud';
 
 export function WelcomeCard() {
     const { currentWallet } = useCurrentWallet();
