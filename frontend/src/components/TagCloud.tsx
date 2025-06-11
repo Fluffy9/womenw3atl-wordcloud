@@ -58,6 +58,12 @@ export function TagCloud() {
                 existingPositions: positionsRef.current.length
             });
 
+            // Don't initialize if there are no words
+            if (words.length === 0) {
+                console.log('No words to position, skipping initialization');
+                return;
+            }
+
             // Ensure we have valid dimensions
             if (window.innerWidth === 0 || window.innerHeight === 0) {
                 console.log('Window dimensions not ready, retrying...');
@@ -66,28 +72,33 @@ export function TagCloud() {
                 return;
             }
 
-            const newPositions = words.map((_, index) => {
-                if (positionsRef.current[index]) {
-                    console.log(`Reusing position for index ${index}`);
-                    return positionsRef.current[index];
-                }
-                const position = generateRandomPosition(index);
-                console.log(`Generated new position for index ${index}:`, position);
-                return position;
-            });
+            // Only initialize if we don't have positions or if the number of words changed
+            if (positionsRef.current.length !== words.length) {
+                console.log('Generating new positions for all words');
+                const newPositions = words.map((_, index) => {
+                    const position = generateRandomPosition(index);
+                    console.log(`Generated new position for index ${index}:`, position);
+                    return position;
+                });
 
-            positionsRef.current = newPositions;
-            console.log('Positions initialized:', {
-                totalPositions: newPositions.length,
-                firstPosition: newPositions[0],
-                lastPosition: newPositions[newPositions.length - 1]
-            });
+                positionsRef.current = newPositions;
+                console.log('Positions initialized:', {
+                    totalPositions: newPositions.length,
+                    firstPosition: newPositions[0],
+                    lastPosition: newPositions[newPositions.length - 1]
+                });
+            } else {
+                console.log('Using existing positions');
+            }
+
             setIsReady(true);
         };
 
-        // Initial check with a small delay to ensure window is ready
-        console.log('Starting initialization with delay...');
-        timeoutId = setTimeout(initializePositions, 50);
+        // Only start initialization if we have words
+        if (words.length > 0) {
+            console.log('Starting initialization with delay...');
+            timeoutId = setTimeout(initializePositions, 50);
+        }
 
         // Set up resize handler
         const handleResize = () => {
@@ -182,6 +193,12 @@ export function TagCloud() {
         console.log('Final position:', position);
         return position;
     };
+
+    // Don't render anything if there are no words
+    if (words.length === 0) {
+        console.log('No words to display');
+        return null;
+    }
 
     if (!isReady) {
         console.log('TagCloud not ready, waiting for initialization...');
